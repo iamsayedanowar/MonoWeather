@@ -42,8 +42,8 @@ A clean, responsive weather dashboard built with React, TypeScript, and Vite. Di
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/iamsayedanowar/KLIMATE.git
-   cd KLIMATE
+   git clone https://github.com/iamsayedanowar/MonoWeather.git
+   cd MonoWeather
    ```
 
 2. **Install dependencies:**
