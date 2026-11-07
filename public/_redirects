@@ -1,0 +1,14 @@
+# Cloudflare Pages Redirects
+#
+# Cloudflare Pages natively handles Single Page Application (SPA) routing:
+# Any route that does not match a static asset automatically falls back to /index.html (200 OK)
+# as long as no top-level 404.html file is present in the build output.
+#
+# Note: Do NOT add "/* /index.html 200" here. On Cloudflare Pages, that rule triggers:
+# "Infinite loop detected in this rule and has been ignored" (Code: 10021).
+#
+# Define any custom 301/302 redirects or path rewrites below:
+# Format: <source> <destination> [code]
+# Examples:
+# /old-route /new-route 301
+# /docs/*    /documentation/:splat 301

@@ -1,0 +1,53 @@
+{
+    "name": "MonoWeather",
+    "short_name": "MonoWeather",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "theme_color": "#09090b",
+    "background_color": "#09090b",
+    "icons": [
+        {
+            "src": "https://mono-weather.pages.dev/favicon/x48.png",
+            "sizes": "48x48",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "https://mono-weather.pages.dev/favicon/x72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "https://mono-weather.pages.dev/favicon/x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "https://mono-weather.pages.dev/favicon/x128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "https://mono-weather.pages.dev/favicon/x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "https://mono-weather.pages.dev/favicon/x384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "https://mono-weather.pages.dev/favicon/x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}
