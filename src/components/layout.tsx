@@ -178,7 +178,7 @@ export function Layout({ children }: PropsWithChildren) {
 							</Link>
 							<span>•</span>
 							<a
-								href="https://github.com/iamsayedanowar"
+								href="https://github.com/iamsayedanowar/MonoWeather"
 								target="_blank"
 								rel="noreferrer noopener"
 								className="hover:text-foreground transition-colors"
