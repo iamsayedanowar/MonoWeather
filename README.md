@@ -1,3 +1,5 @@
+![MonoWeather](https://raw.githubusercontent.com/iamsayedanowar/MonoWeather/refs/heads/main/public/GRP.png)
+
 # MonoWeather
 
 A clean, responsive weather dashboard built with React, TypeScript, and Vite. Displays real-time weather conditions, 5-day forecasts, air quality metrics, and interactive maps using data from OpenWeatherMap.
