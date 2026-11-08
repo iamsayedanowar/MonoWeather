@@ -5,7 +5,7 @@ import { SettingsDialog } from "./settings-dialog";
 import { useTheme } from "@/context/theme-provider";
 
 export function Header() {
-	const { theme } = useTheme();
+	const { resolvedTheme } = useTheme();
 	const [timeString, setTimeString] = useState<string>("");
 
 	useEffect(() => {
@@ -27,7 +27,7 @@ export function Header() {
 					<Link to="/" className="flex items-center gap-2.5 group">
 						<div className="relative flex items-center justify-center">
 							<img
-								src={theme === "dark" ? "/logo.svg" : "/logo2.svg"}
+								src={resolvedTheme === "dark" ? "/logo.svg" : "/logo2.svg"}
 								alt="MonoWeather Home"
 								className="h-8 w-auto object-contain transition-opacity group-hover:opacity-85"
 							/>
