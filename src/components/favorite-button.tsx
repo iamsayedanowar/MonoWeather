@@ -45,10 +45,8 @@ export function FavoriteButton({ data, className }: FavoriteButtonProps) {
 			title={isCurrentlyFavorite ? "Remove from favorites" : "Save to favorites"}
 			aria-label={isCurrentlyFavorite ? "Remove from favorites" : "Save to favorites"}
 		>
-			<Star
-				className={cn("size-3.5 mr-1.5", isCurrentlyFavorite && "fill-current")}
-			/>
-			<span>{isCurrentlyFavorite ? "Saved" : "Save"}</span>
+			<Star className="size-3.5 sm:mr-1.5" />
+			<span className="hidden sm:inline">{isCurrentlyFavorite ? "Saved" : "Save"}</span>
 		</Button>
 	);
 }

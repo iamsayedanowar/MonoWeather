@@ -181,29 +181,30 @@ export function WeatherDashboard() {
 			<FavoriteCities />
 
 			{/* Station Header */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 pb-3">
-				<div className="space-y-0.5">
+			<div className="flex items-center justify-between gap-3 border-b border-border/80 pb-3">
+				<div className="space-y-0.5 min-w-0">
 					<div className="flex items-center gap-2">
 						<span className="text-xs font-medium text-foreground">
 							Local weather
 						</span>
 					</div>
-					<p className="font-mono text-xs text-muted-foreground">
-						{coordinates.lat.toFixed(4)}°N, {coordinates.lon.toFixed(4)}°E · Live
+					<p className="font-mono text-xs text-muted-foreground truncate">
+						{coordinates.lat.toFixed(4)}°N, {coordinates.lon.toFixed(4)}°E
 					</p>
 				</div>
 
-				<div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+				<div className="flex items-center gap-2 shrink-0">
 					<Button
 						variant="outline"
 						size="sm"
 						onClick={getLocation}
 						disabled={locationLoading}
-						className="font-mono text-xs w-full sm:w-auto rounded-md"
+						className="font-mono text-xs h-8 w-8 p-0 sm:h-7 sm:w-auto sm:px-2.5 rounded-md"
 						title="Update GPS location"
+						aria-label="Update GPS location"
 					>
-						<LocateFixed className="size-3.5 mr-1.5" />
-						Locate
+						<LocateFixed className="size-3.5 sm:mr-1.5" />
+						<span className="hidden sm:inline">Locate</span>
 					</Button>
 
 					<Button
@@ -211,11 +212,12 @@ export function WeatherDashboard() {
 						size="sm"
 						onClick={handleRefresh}
 						disabled={isSyncing}
-						className="font-mono text-xs w-full sm:w-auto rounded-md"
+						className="font-mono text-xs h-8 w-8 p-0 sm:h-7 sm:w-auto sm:px-2.5 rounded-md"
 						title="Refresh weather data"
+						aria-label="Refresh weather data"
 					>
-						<RefreshCw className={`size-3.5 mr-1.5 ${isSyncing ? "animate-spin" : ""}`} />
-						{isSyncing ? "Refreshing..." : "Refresh"}
+						<RefreshCw className={`size-3.5 ${isSyncing ? "animate-spin" : ""} sm:mr-1.5`} />
+						<span className="hidden sm:inline">{isSyncing ? "Refreshing..." : "Refresh"}</span>
 					</Button>
 				</div>
 			</div>

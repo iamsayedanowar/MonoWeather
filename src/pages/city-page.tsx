@@ -67,27 +67,27 @@ export function CityPage() {
 	return (
 		<div className="space-y-6 min-w-0">
 			{/* Breadcrumb Navigation & Controls */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 pb-3">
-				<div className="space-y-0.5">
+			<div className="flex items-center justify-between gap-3 border-b border-border/80 pb-3">
+				<div className="space-y-0.5 min-w-0">
 					<div className="flex items-center gap-2">
 						<Link
 							to="/"
-							className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+							className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
 						>
 							<ArrowLeft className="size-3" />
 							<span>Home</span>
 						</Link>
-						<span className="text-muted-foreground text-xs">/</span>
-						<span className="text-xs font-medium text-foreground">
+						<span className="text-muted-foreground text-xs shrink-0">/</span>
+						<span className="text-xs font-medium text-foreground truncate">
 							{displayName}
 						</span>
 					</div>
-					<p className="font-mono text-xs text-muted-foreground">
-						{lat.toFixed(4)}°N, {lon.toFixed(4)}°E · Live
+					<p className="font-mono text-xs text-muted-foreground truncate">
+						{lat.toFixed(4)}°N, {lon.toFixed(4)}°E
 					</p>
 				</div>
 
-				<div className="flex items-center gap-2 w-full sm:w-auto">
+				<div className="flex items-center gap-2 shrink-0">
 					<Button
 						variant="outline"
 						size="sm"
@@ -97,11 +97,12 @@ export function CityPage() {
 							airPollutionQuery.refetch();
 						}}
 						disabled={isSyncing}
-						className="font-mono text-xs flex-1 sm:flex-initial rounded-md"
+						className="font-mono text-xs h-8 w-8 p-0 sm:h-7 sm:w-auto sm:px-2.5 rounded-md"
 						title="Refresh weather data"
+						aria-label="Refresh weather data"
 					>
-						<RefreshCw className={`size-3.5 mr-1.5 ${isSyncing ? "animate-spin" : ""}`} />
-						{isSyncing ? "Refreshing..." : "Refresh"}
+						<RefreshCw className={`size-3.5 ${isSyncing ? "animate-spin" : ""} sm:mr-1.5`} />
+						<span className="hidden sm:inline">{isSyncing ? "Refreshing..." : "Refresh"}</span>
 					</Button>
 
 					<FavoriteButton
@@ -110,7 +111,7 @@ export function CityPage() {
 							name: displayName,
 							state: locationName?.state,
 						}}
-						className="flex-1 sm:flex-initial rounded-md"
+						className="h-8 w-8 p-0 sm:h-7 sm:w-auto sm:px-2.5 rounded-md"
 					/>
 				</div>
 			</div>
@@ -124,12 +125,12 @@ export function CityPage() {
 							locationName
 								? { ...locationName, name: displayName }
 								: {
-										name: displayName,
-										country: weatherQuery.data.sys.country,
-										state: "",
-										lat,
-										lon,
-								  }
+									name: displayName,
+									country: weatherQuery.data.sys.country,
+									state: "",
+									lat,
+									lon,
+								}
 						}
 					/>
 				</div>

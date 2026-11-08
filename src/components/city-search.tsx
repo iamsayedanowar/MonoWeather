@@ -99,7 +99,7 @@ export function CitySearch() {
 										className="flex items-center justify-between py-2 text-xs"
 									>
 										<div className="flex items-center gap-2 truncate">
-											<Star className="h-3.5 w-3.5 text-foreground shrink-0 fill-foreground" />
+											<Star className="h-3.5 w-3.5 text-foreground shrink-0" />
 											<span className="font-medium text-foreground">{city.name}</span>
 											{city.state && (
 												<span className="text-muted-foreground">{city.state},</span>
