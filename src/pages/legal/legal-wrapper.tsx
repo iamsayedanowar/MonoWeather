@@ -70,16 +70,6 @@ export function LegalWrapper({
 				</div>
 			</div>
 
-			{/* Main Document Header */}
-			<div className="space-y-2">
-				<h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground font-sans">
-					{title}
-				</h1>
-				<p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
-					{subtitle}
-				</p>
-			</div>
-
 			{/* Tab Navigation Pill Bar */}
 			<div className="border border-border bg-card/60 p-1.5 grid grid-cols-1 sm:grid-cols-3 gap-1.5 font-mono rounded-lg">
 				{tabs.map((tab) => {
@@ -109,6 +99,16 @@ export function LegalWrapper({
 						</Link>
 					);
 				})}
+			</div>
+
+			{/* Main Document Header */}
+			<div className="space-y-2">
+				<h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground font-sans">
+					{title}
+				</h1>
+				<p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
+					{subtitle}
+				</p>
 			</div>
 
 			{/* Document Content */}
