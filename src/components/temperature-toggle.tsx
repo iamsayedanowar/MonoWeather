@@ -1,15 +1,15 @@
-import { useTemperature } from "@/context/temperature-provider";
+import { useUnitSettings } from "@/context/unit-settings-provider";
 
 export function TemperatureToggle() {
-	const { unit, setUnit } = useTemperature();
+	const { tempUnit, setTempUnit } = useUnitSettings();
 
 	return (
 		<div className="h-8 flex items-center border border-border bg-muted/40 p-0.5 rounded-md">
 			<button
 				type="button"
-				onClick={() => setUnit("C")}
+				onClick={() => setTempUnit("C")}
 				className={`h-full flex items-center justify-center px-2.5 text-xs font-mono font-medium transition-colors cursor-pointer rounded-sm ${
-					unit === "C"
+					tempUnit === "C"
 						? "bg-background text-foreground shadow-sm border border-border/80"
 						: "text-muted-foreground hover:text-foreground border border-transparent"
 				}`}
@@ -19,9 +19,9 @@ export function TemperatureToggle() {
 			</button>
 			<button
 				type="button"
-				onClick={() => setUnit("F")}
+				onClick={() => setTempUnit("F")}
 				className={`h-full flex items-center justify-center px-2.5 text-xs font-mono font-medium transition-colors cursor-pointer rounded-sm ${
-					unit === "F"
+					tempUnit === "F"
 						? "bg-background text-foreground shadow-sm border border-border/80"
 						: "text-muted-foreground hover:text-foreground border border-transparent"
 				}`}

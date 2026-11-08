@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 import { Search, Loader2, Clock, Star, Trash2 } from "lucide-react";
 import { useLocationSearch } from "@/hooks/use-weather";
 import { useSearchHistory } from "@/hooks/use-search-history";
+import { useUnitSettings } from "@/context/unit-settings-provider";
 import {
 	Command,
 	CommandDialog,
@@ -21,6 +21,7 @@ export function CitySearch() {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
 	const navigate = useNavigate();
+	const { formatTime } = useUnitSettings();
 
 	const { data: locations, isLoading } = useLocationSearch(query);
 	const { favorites } = useFavorites();
@@ -149,7 +150,7 @@ export function CitySearch() {
 											<span className="text-muted-foreground">{item.country}</span>
 										</div>
 										<span className="font-mono text-[10px] text-muted-foreground shrink-0">
-											{format(item.searchedAt, "HH:mm")}
+											{formatTime(item.searchedAt)}
 										</span>
 									</CommandItem>
 								))}

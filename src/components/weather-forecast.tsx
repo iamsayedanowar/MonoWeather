@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ArrowDown, ArrowUp, Droplets, Wind, Navigation2Icon } from "lucide-react";
 import { format } from "date-fns";
 import type { ForecastData } from "@/api/types";
-import { useTemperature } from "@/context/temperature-provider";
+import { useUnitSettings } from "@/context/unit-settings-provider";
 import { WeatherIcon } from "./weather-icon";
 
 interface WeatherForecastProps {
@@ -52,7 +52,7 @@ export function WeatherForecast({ data }: WeatherForecastProps) {
 	// Get next 5 days
 	const nextDays = Object.values(dailyForecasts).slice(1, 6);
 
-	const { formatTemp } = useTemperature();
+	const { formatTemp, formatWindSpeed } = useUnitSettings();
 
 	// Convert wind degree to direction
 	const getWindDirection = (degree: number) => {
@@ -113,7 +113,7 @@ export function WeatherForecast({ data }: WeatherForecastProps) {
 								</span>
 								<span className="flex items-center gap-1">
 									<Wind className="h-4 w-4 text-blue-500" />
-									<span className="text-sm whitespace-nowrap">{(day.wind * 3.6).toFixed(1)} km/h</span>
+									<span className="text-sm whitespace-nowrap">{formatWindSpeed(day.wind)}</span>
 									<Navigation2Icon
 										className="h-3 w-3 text-blue-500"
 										style={{ transform: `rotate(${day.wind_deg}deg)` }}

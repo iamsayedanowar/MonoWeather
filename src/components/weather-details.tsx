@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Sunrise, Sunset } from "lucide-react";
-import { format } from "date-fns";
 import type { WeatherData } from "@/api/types";
+import { useUnitSettings } from "@/context/unit-settings-provider";
 
 interface WeatherDetailsProps {
 	data: WeatherData;
@@ -9,11 +9,7 @@ interface WeatherDetailsProps {
 
 export function WeatherDetails({ data }: WeatherDetailsProps) {
 	const { sys } = data;
-
-	// Format time using date-fns
-	const formatTime = (timestamp: number) => {
-		return format(new Date(timestamp * 1000), "h:mm a");
-	};
+	const { formatTime } = useUnitSettings();
 
 	const details = [
 		{

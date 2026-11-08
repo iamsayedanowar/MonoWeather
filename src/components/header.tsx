@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CitySearch } from "./city-search";
-import { ThemeToggle } from "./theme-toggle";
-import { TemperatureToggle } from "./temperature-toggle";
+import { SettingsDialog } from "./settings-dialog";
 import { useTheme } from "@/context/theme-provider";
 
 export function Header() {
@@ -36,12 +35,7 @@ export function Header() {
 					</Link>
 
 					{/* Live telemetry indicator */}
-					<div className="hidden sm:flex items-center gap-3 pl-4 border-l border-border/80">
-						<div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-							<span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-							<span className="text-foreground font-medium">Live</span>
-						</div>
-						<span className="text-border">·</span>
+					<div className="hidden sm:flex items-center pl-4 border-l border-border/80">
 						<span className="font-mono text-xs text-muted-foreground">
 							UTC {timeString || "00:00:00"}
 						</span>
@@ -52,8 +46,7 @@ export function Header() {
 				<div className="flex items-center gap-2.5 sm:gap-3">
 					<CitySearch />
 					<div className="h-4 w-px bg-border/60 hidden sm:block" />
-					<TemperatureToggle />
-					<ThemeToggle />
+					<SettingsDialog />
 				</div>
 			</div>
 		</header>

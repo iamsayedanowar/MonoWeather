@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { format } from "date-fns";
 import type { ForecastData } from "@/api/types";
-import { useTemperature } from "@/context/temperature-provider";
+import { useUnitSettings } from "@/context/unit-settings-provider";
 import {
 	Navigation2,
 	Droplets,
@@ -61,7 +61,17 @@ interface ChartDataPoint {
 type TabId = "temperature" | "wind" | "humidity" | "pressure" | "clouds" | "visibility" | "wet_bulb";
 
 export function HourlyTemperature({ data }: HourlyTemperatureProps) {
-	const { getChartTemp, unit } = useTemperature();
+	const {
+		getChartTemp,
+		tempUnit,
+		formatTime,
+		getWindSpeed,
+		windSpeedUnit,
+		getPressure,
+		pressureUnit,
+		getDistance,
+		distanceUnit,
+	} = useUnitSettings();
 	const [activeTab, setActiveTab] = useState<TabId>("temperature");
 	const [showChart, setShowChart] = useState<boolean>(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -147,19 +157,19 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 	const chartData: ChartDataPoint[] = data.list.map((item) => {
 		const date = new Date(item.dt * 1000);
 		return {
-			time: format(date, "HH:mm"),
-			fullTime: format(date, "MMM d, HH:mm"),
+			time: formatTime(date, "short"),
+			fullTime: formatTime(date, "full"),
 			date: format(date, "d MMM"),
 			temp: Math.round(getChartTemp(item.main.temp)),
 			feels_like: Math.round(getChartTemp(item.main.feels_like)),
 			humidity: item.main.humidity,
 			pop: Math.round(item.pop * 100),
-			wind_speed: Number((item.wind.speed * 3.6).toFixed(1)),
-			wind_gust: Number(((item.wind.gust || item.wind.speed) * 3.6).toFixed(1)),
+			wind_speed: getWindSpeed(item.wind.speed),
+			wind_gust: getWindSpeed(item.wind.gust || item.wind.speed),
 			wind_deg: item.wind.deg,
-			visibility: Number((item.visibility / 1000).toFixed(1)),
+			visibility: getDistance(item.visibility),
 			wet_bulb: Math.round(getChartTemp(calculateWetBulb(item.main.temp, item.main.humidity))),
-			pressure: item.main.pressure,
+			pressure: getPressure(item.main.pressure),
 			clouds: item.clouds.all,
 			icon: item.weather[0].icon,
 			description: item.weather[0].description,
@@ -167,13 +177,13 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 	});
 
 	const tabConfigs: { id: TabId; label: string; unitLabel: string; dataKey: keyof ChartDataPoint; formatter: (v: number) => string; }[] = [
-		{ id: "temperature", label: "Temperature", unitLabel: `°${unit}`, dataKey: "temp", formatter: (val) => `${val}°` },
-		{ id: "wind", label: "Wind", unitLabel: "km/h", dataKey: "wind_speed", formatter: (val) => `${val} km/h` },
+		{ id: "temperature", label: "Temperature", unitLabel: `°${tempUnit}`, dataKey: "temp", formatter: (val) => `${val}°` },
+		{ id: "wind", label: "Wind", unitLabel: windSpeedUnit, dataKey: "wind_speed", formatter: (val) => `${val} ${windSpeedUnit}` },
 		{ id: "humidity", label: "Humidity", unitLabel: "%", dataKey: "humidity", formatter: (val) => `${val}%` },
-		{ id: "pressure", label: "Pressure", unitLabel: "hPa", dataKey: "pressure", formatter: (val) => `${val} hPa` },
+		{ id: "pressure", label: "Pressure", unitLabel: pressureUnit, dataKey: "pressure", formatter: (val) => `${val} ${pressureUnit}` },
 		{ id: "clouds", label: "Clouds", unitLabel: "%", dataKey: "clouds", formatter: (val) => `${val}%` },
-		{ id: "visibility", label: "Visibility", unitLabel: "km", dataKey: "visibility", formatter: (val) => `${val} km` },
-		{ id: "wet_bulb", label: "Heat Index", unitLabel: `°${unit}`, dataKey: "wet_bulb", formatter: (val) => `${val}°` },
+		{ id: "visibility", label: "Visibility", unitLabel: distanceUnit, dataKey: "visibility", formatter: (val) => `${val} ${distanceUnit}` },
+		{ id: "wet_bulb", label: "Heat Index", unitLabel: `°${tempUnit}`, dataKey: "wet_bulb", formatter: (val) => `${val}°` },
 	];
 
 	const activeConfig = tabConfigs.find((c) => c.id === activeTab) || tabConfigs[0];

@@ -5,7 +5,7 @@ import { X, Loader2, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 import { useFavorites } from "@/hooks/use-favorite";
 import { toast } from "sonner";
 import { WeatherIcon } from "./weather-icon";
-import { useTemperature } from "@/context/temperature-provider";
+import { useUnitSettings } from "@/context/unit-settings-provider";
 
 interface FavoriteCityTabletProps {
 	id: string;
@@ -26,7 +26,7 @@ function FavoriteCityTablet({
 }: FavoriteCityTabletProps) {
 	const navigate = useNavigate();
 	const { data: weather, isLoading } = useWeatherQuery({ lat, lon });
-	const { formatTemp } = useTemperature();
+	const { formatTemp } = useUnitSettings();
 
 	const handleClick = () => {
 		if (isDragActive()) return;

@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import {
 	Navigation2,
@@ -16,7 +15,7 @@ import {
 	Clock,
 } from "lucide-react";
 import type { WeatherData, GeocodingResponse } from "@/api/types";
-import { useTemperature } from "@/context/temperature-provider";
+import { useUnitSettings } from "@/context/unit-settings-provider";
 import { WeatherIcon } from "./weather-icon";
 
 interface CurrentWeatherProps {
@@ -32,11 +31,20 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 		visibility,
 		clouds: { all: cloudiness },
 		sys: { sunrise, sunset, country },
-		coord: { lat, lon },
 		dt,
 	} = data;
 
-	const { formatTemp, getChartTemp } = useTemperature();
+	const {
+		formatTemp,
+		getChartTemp,
+		formatTime,
+		getWindSpeed,
+		windSpeedUnit,
+		getPressure,
+		pressureUnit,
+		getDistance,
+		distanceUnit,
+	} = useUnitSettings();
 
 	// Empirical formula for Wet-Bulb Temperature (Stull 2011)
 	const getWetBulbTemperature = (T: number, rh: number) => {
@@ -79,7 +87,6 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 	const isDay = nowSeconds >= sunrise && nowSeconds < sunset;
 
 	const windKmh = Number((speed * 3.6).toFixed(1));
-	const gustKmh = Number((gust ? gust * 3.6 : speed * 3.6).toFixed(1));
 	const wetBulb = getWetBulbTemperature(temp, humidity);
 
 	return (
@@ -93,7 +100,7 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 					</div>
 					<div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
 						<Clock className="size-3 text-muted-foreground" />
-						<span>Updated {format(new Date(dt * 1000), "HH:mm")}</span>
+						<span>Updated {formatTime(dt)}</span>
 					</div>
 				</div>
 
@@ -105,8 +112,6 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 						<div className="flex items-center gap-2 font-mono text-xs text-muted-foreground mt-0.5">
 							{locationName?.state && <span>{locationName.state},</span>}
 							<span>{locationName?.country || country}</span>
-							<span>·</span>
-							<span>{lat.toFixed(4)}°N, {lon.toFixed(4)}°E</span>
 						</div>
 					</div>
 
@@ -186,7 +191,7 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 							<Wind className="size-3.5 text-muted-foreground" />
 						</div>
 						<div className="font-mono text-lg font-semibold text-foreground">
-							{windKmh} <span className="text-xs font-normal text-muted-foreground font-sans">km/h</span>
+							{getWindSpeed(speed)} <span className="text-xs font-normal text-muted-foreground font-sans">{windSpeedUnit}</span>
 						</div>
 						<p className="text-xs text-muted-foreground truncate">
 							{getBeaufortDescription(windKmh)}
@@ -200,7 +205,7 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 							<Navigation2 className="size-3.5 text-muted-foreground rotate-45" />
 						</div>
 						<div className="font-mono text-lg font-semibold text-foreground">
-							{gustKmh} <span className="text-xs font-normal text-muted-foreground font-sans">km/h</span>
+							{getWindSpeed(gust || speed)} <span className="text-xs font-normal text-muted-foreground font-sans">{windSpeedUnit}</span>
 						</div>
 						<p className="text-xs text-muted-foreground">
 							Max recorded
@@ -232,7 +237,7 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 							<Gauge className="size-3.5 text-muted-foreground" />
 						</div>
 						<div className="font-mono text-lg font-semibold text-foreground">
-							{pressure} <span className="text-xs font-normal text-muted-foreground font-sans">hPa</span>
+							{getPressure(pressure)} <span className="text-xs font-normal text-muted-foreground font-sans">{pressureUnit}</span>
 						</div>
 						<p className="text-xs text-muted-foreground">
 							{pressure > 1013 ? "High (clear)" : "Low (rain likely)"}
@@ -246,7 +251,7 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 							<Eye className="size-3.5 text-muted-foreground" />
 						</div>
 						<div className="font-mono text-lg font-semibold text-foreground">
-							{(visibility / 1000).toFixed(1)} <span className="text-xs font-normal text-muted-foreground font-sans">km</span>
+							{getDistance(visibility)} <span className="text-xs font-normal text-muted-foreground font-sans">{distanceUnit}</span>
 						</div>
 						<p className="text-xs text-muted-foreground">
 							{visibility >= 10000 ? "Clear view" : "Haze / fog"}
@@ -288,11 +293,11 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 					<div className="flex items-center justify-between font-mono text-xs">
 						<div className="flex items-center gap-1.5 text-foreground font-medium">
 							<Sunrise className="size-3.5 text-muted-foreground shrink-0" />
-							<span>Sunrise {format(new Date(sunrise * 1000), "HH:mm")}</span>
+							<span>Sunrise {formatTime(sunrise)}</span>
 						</div>
 						<div className="flex items-center gap-1.5 text-foreground font-medium">
 							<Sunset className="size-3.5 text-muted-foreground shrink-0" />
-							<span>Sunset {format(new Date(sunset * 1000), "HH:mm")}</span>
+							<span>Sunset {formatTime(sunset)}</span>
 						</div>
 					</div>
 

@@ -4,7 +4,7 @@ import { Toaster } from "./components/ui/sonner";
 import { WeatherDashboard } from "./pages/weather-dashboard";
 import { Layout } from "./components/layout";
 import { ThemeProvider } from "./context/theme-provider";
-import { TemperatureProvider } from "./context/temperature-provider";
+import { UnitSettingsProvider } from "./context/unit-settings-provider";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { CityPage } from "./pages/city-page";
 import { ScrollToTop } from "./components/scroll-to-top";
@@ -28,7 +28,7 @@ function App() {
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>
 				<ScrollToTop />
-				<TemperatureProvider>
+				<UnitSettingsProvider>
 					<ThemeProvider defaultTheme="dark">
 						<Layout>
 							<Routes>
@@ -45,7 +45,7 @@ function App() {
 						</Layout>
 						<Toaster richColors />
 					</ThemeProvider>
-				</TemperatureProvider>
+				</UnitSettingsProvider>
 			</BrowserRouter>
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
