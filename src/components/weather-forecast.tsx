@@ -116,7 +116,7 @@ export function WeatherForecast({ data }: WeatherForecastProps) {
 									<span className="text-sm whitespace-nowrap">{formatWindSpeed(day.wind)}</span>
 									<Navigation2Icon
 										className="h-3 w-3 text-blue-500"
-										style={{ transform: `rotate(${day.wind_deg}deg)` }}
+										style={{ transform: `rotate(${(day.wind_deg + 180) % 360}deg)` }}
 									/>
 									<span className="text-sm whitespace-nowrap">
 										({day.wind_deg}°{getWindDirection(day.wind_deg)})

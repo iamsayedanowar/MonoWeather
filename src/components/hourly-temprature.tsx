@@ -196,7 +196,7 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 				return (
 					<Navigation2
 						className="size-5 text-foreground transition-transform"
-						style={{ transform: `rotate(${item.wind_deg}deg)` }}
+						style={{ transform: `rotate(${(item.wind_deg + 180) % 360}deg)` }}
 					/>
 				);
 			case "humidity":

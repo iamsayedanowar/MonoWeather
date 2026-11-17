@@ -222,7 +222,7 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 							<span>{deg}° {getWindDirection(deg)}</span>
 							<Navigation2
 								className="size-3.5 text-foreground transition-transform shrink-0"
-								style={{ transform: `rotate(${deg}deg)` }}
+								style={{ transform: `rotate(${(deg + 180) % 360}deg)` }}
 							/>
 						</div>
 						<p className="text-xs text-muted-foreground">

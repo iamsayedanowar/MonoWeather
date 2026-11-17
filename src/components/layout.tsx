@@ -1,6 +1,7 @@
 import { useState, useEffect, type PropsWithChildren } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { Copyright } from "lucide-react";
 import { Header } from "./header";
 
 function PlatformStatus() {
@@ -101,21 +102,6 @@ export function Layout({ children }: PropsWithChildren) {
 							</div>
 						</div>
 
-						{/* Ingestion Channels / Data Sources */}
-						<div className="space-y-2">
-							<h4 className="font-mono text-xs font-medium text-foreground">
-								Data sources
-							</h4>
-							<ul className="space-y-1.5 text-xs text-muted-foreground">
-								<li>
-									<span className="hover:text-foreground transition-colors cursor-default">OpenWeather API</span>
-								</li>
-								<li>
-									<span className="hover:text-foreground transition-colors cursor-default">MapLibre GL</span>
-								</li>
-							</ul>
-						</div>
-
 						{/* Legal & Compliance */}
 						<div className="space-y-2">
 							<h4 className="font-mono text-xs font-medium text-foreground">
@@ -140,6 +126,21 @@ export function Layout({ children }: PropsWithChildren) {
 							</ul>
 						</div>
 
+						{/* Ingestion Channels / Data Sources */}
+						<div className="space-y-2">
+							<h4 className="font-mono text-xs font-medium text-foreground">
+								Data sources
+							</h4>
+							<ul className="space-y-1.5 text-xs text-muted-foreground">
+								<li>
+									<span className="hover:text-foreground transition-colors cursor-default">OpenWeather API</span>
+								</li>
+								<li>
+									<span className="hover:text-foreground transition-colors cursor-default">MapLibre GL</span>
+								</li>
+							</ul>
+						</div>
+
 						{/* System Status & SLA */}
 						<PlatformStatus />
 					</div>
@@ -148,7 +149,10 @@ export function Layout({ children }: PropsWithChildren) {
 					<div className="pt-6 grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-4 text-xs text-muted-foreground">
 						{/* Left: Copyright & Developer */}
 						<div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-							<span>© {new Date().getFullYear()} MonoWeather</span>
+							<span className="flex items-center gap-1">
+								<Copyright className="h-2.5 w-2.5 shrink-0" />
+								<span>{new Date().getFullYear()} MonoWeather</span>
+							</span>
 							<span>•</span>
 							<span>
 								Built by{" "}
