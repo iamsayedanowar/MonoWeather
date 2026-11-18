@@ -238,8 +238,8 @@ export function SettingsDialog() {
 								<p className="text-[11px] text-muted-foreground font-mono">Barometric unit</p>
 							</div>
 						</div>
-						<div className="w-full grid grid-cols-2 border border-border bg-muted/40 p-0.5 rounded-md">
-							{(["hPa", "psi"] as PressureUnit[]).map((unit) => (
+						<div className="w-full grid grid-cols-3 border border-border bg-muted/40 p-0.5 rounded-md">
+							{(["hPa", "psi", "mmHg"] as PressureUnit[]).map((unit) => (
 								<button
 									key={unit}
 									type="button"
@@ -250,7 +250,7 @@ export function SettingsDialog() {
 											: "text-muted-foreground hover:text-foreground border border-transparent"
 									}`}
 								>
-									{unit === "hPa" ? "hpa" : "psi"}
+									{unit}
 								</button>
 							))}
 						</div>

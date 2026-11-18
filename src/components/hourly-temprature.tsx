@@ -169,7 +169,7 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 			temp: Math.round(getChartTemp(item.main.temp)),
 			feels_like: Math.round(getChartTemp(item.main.feels_like)),
 			humidity: item.main.humidity,
-			pop: Math.round(item.pop * 100),
+			pop: Math.round((item.pop ?? 0) * 100),
 			wind_speed: getWindSpeed(item.wind.speed),
 			wind_gust: getWindSpeed(item.wind.gust || item.wind.speed),
 			wind_deg: item.wind.deg,
@@ -431,14 +431,16 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 
 							{/* Center: Condition & Metric Icon */}
 							<div className="flex flex-col items-center gap-1.5 py-1">
-								<div className="flex items-center justify-center size-8">
+								<div className="h-5 shrink-0 flex items-center justify-center">
+									{item.pop > 0 && (
+										<span className="font-mono text-[10px] leading-none px-1.5 py-0.5 border border-border/60 bg-muted/40 text-foreground rounded whitespace-nowrap">
+											{item.pop}% rain
+										</span>
+									)}
+								</div>
+								<div className="flex items-center justify-center size-8 shrink-0">
 									{renderIcon(activeTab, item)}
 								</div>
-								{item.pop > 0 && (
-									<span className="font-mono text-[10px] px-1.5 py-0.2 border border-border/60 bg-muted/40 text-foreground rounded">
-										{item.pop}% rain
-									</span>
-								)}
 							</div>
 
 							{/* Footer: Value & Sub-reading */}

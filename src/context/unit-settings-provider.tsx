@@ -1,11 +1,12 @@
 import { createContext, useContext, PropsWithChildren } from "react";
 import { format as formatFns } from "date-fns";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { convertPressure, PRESSURE_UNITS, type PressureUnit } from "@/lib/pressure";
 
 export type TempUnit = "C" | "F";
 export type TimeFormatUnit = "12h" | "24h";
 export type WindSpeedUnit = "km/h" | "mph" | "m/s" | "knots";
-export type PressureUnit = "hPa" | "psi";
+export type { PressureUnit };
 export type DistanceUnit = "km" | "mph";
 
 export interface UnitSettings {
@@ -60,7 +61,10 @@ export function UnitSettingsProvider({ children }: PropsWithChildren) {
 		tempUnit: settings?.tempUnit || DEFAULT_SETTINGS.tempUnit,
 		timeFormat: settings?.timeFormat || DEFAULT_SETTINGS.timeFormat,
 		windSpeedUnit: settings?.windSpeedUnit || DEFAULT_SETTINGS.windSpeedUnit,
-		pressureUnit: settings?.pressureUnit || DEFAULT_SETTINGS.pressureUnit,
+		pressureUnit:
+			settings?.pressureUnit && PRESSURE_UNITS.includes(settings.pressureUnit)
+				? settings.pressureUnit
+				: DEFAULT_SETTINGS.pressureUnit,
 		distanceUnit: settings?.distanceUnit || DEFAULT_SETTINGS.distanceUnit,
 	};
 
@@ -136,10 +140,7 @@ export function UnitSettingsProvider({ children }: PropsWithChildren) {
 
 	// Pressure helpers (OpenWeather API sends hPa)
 	const getPressure = (pressureHpa: number): number => {
-		if (currentSettings.pressureUnit === "psi") {
-			return Number((pressureHpa * 0.01450377).toFixed(2));
-		}
-		return Math.round(pressureHpa);
+		return convertPressure(pressureHpa, currentSettings.pressureUnit);
 	};
 
 	const formatPressure = (pressureHpa: number): string => {
