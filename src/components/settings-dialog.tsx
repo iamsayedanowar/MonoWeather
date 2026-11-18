@@ -55,7 +55,7 @@ export function SettingsDialog() {
 				</button>
 			</DialogTrigger>
 
-			<DialogContent className="sm:max-w-md border-border bg-card max-h-[90vh] overflow-y-auto">
+			<DialogContent className="sm:max-w-md border-border bg-card max-h-[90vh] overflow-y-auto scrollbar-hide">
 				<DialogHeader className="text-left pb-2 border-b border-border/60">
 					<DialogTitle className="text-base font-semibold tracking-tight text-foreground flex items-center gap-2">
 						<Settings className="size-4 text-muted-foreground" />

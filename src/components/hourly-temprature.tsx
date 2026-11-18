@@ -307,22 +307,20 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 								<button
 									type="button"
 									onClick={() => setTimeRange("24h")}
-									className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors cursor-pointer border ${
-										timeRange === "24h"
-											? "bg-secondary text-foreground border-border font-medium"
-											: "bg-background text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60"
-									}`}
+									className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors cursor-pointer border ${timeRange === "24h"
+										? "bg-secondary text-foreground border-border font-medium"
+										: "bg-background text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60"
+										}`}
 								>
 									24h
 								</button>
 								<button
 									type="button"
 									onClick={() => setTimeRange("5d")}
-									className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors cursor-pointer border ${
-										timeRange === "5d"
-											? "bg-secondary text-foreground border-border font-medium"
-											: "bg-background text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60"
-									}`}
+									className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors cursor-pointer border ${timeRange === "5d"
+										? "bg-secondary text-foreground border-border font-medium"
+										: "bg-background text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60"
+										}`}
 								>
 									5d
 								</button>
@@ -355,7 +353,7 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 							<div className="flex flex-col shrink-0">
 								{/* Sticky Day Header */}
 								<div className="sticky left-0 z-10 self-start mb-2 pointer-events-none">
-									<span className="font-mono text-xs font-semibold text-foreground bg-secondary/90 backdrop-blur-xs px-2.5 py-0.5 rounded-md border border-border/60 inline-flex items-center shadow-xs">
+									<span className="font-mono text-xs text-foreground bg-secondary/90 backdrop-blur-xs px-2.5 py-0.5 rounded-md border border-border/60 inline-flex items-center shadow-xs">
 										{group.dayLabel}
 									</span>
 								</div>
