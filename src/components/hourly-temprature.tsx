@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { format } from "date-fns";
 import type { ForecastData } from "@/api/types";
 import { useUnitSettings } from "@/context/unit-settings-provider";
+import { groupForecastsByDay } from "@/lib/forecast-groups";
 import {
 	Navigation2,
 	Droplets,
@@ -43,6 +44,7 @@ interface ChartDataPoint {
 	time: string;
 	fullTime: string;
 	date: string;
+	dayName?: string;
 	shortDate: string;
 	temp: number;
 	feels_like: number;
@@ -165,6 +167,7 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 			time: formatTime(date, "short"),
 			fullTime: formatTime(date, "full"),
 			date: format(date, "d MMM"),
+			dayName: format(date, "EEEE"),
 			shortDate: index === 0 ? "Today" : format(date, "d MMM"),
 			temp: Math.round(getChartTemp(item.main.temp)),
 			feels_like: Math.round(getChartTemp(item.main.feels_like)),
@@ -185,6 +188,10 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 	const displayData = useMemo(() => {
 		return timeRange === "24h" ? chartData.slice(0, 8) : chartData;
 	}, [chartData, timeRange]);
+
+	const dayGroups = useMemo(() => {
+		return groupForecastsByDay(chartData);
+	}, [chartData]);
 
 	const xTicks = useMemo(() => {
 		if (!displayData.length) return [];
@@ -412,78 +419,99 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 				{/* 3-Hour Interval Scrub Deck */}
 				<div
 					ref={scrollRef}
-					className="flex gap-2.5 overflow-x-auto scrollbar-hide w-full snap-x"
+					className="flex overflow-x-auto scrollbar-hide w-full snap-x pb-1"
 				>
-					{chartData.map((item, i) => (
-						<div
-							key={i}
-							className="flex flex-col items-center justify-between gap-3 p-3 border border-border bg-card hover:bg-muted/30 transition-colors shrink-0 min-w-[108px] snap-center rounded-lg"
-						>
-							{/* Header: Date & Time */}
-							<div className="flex flex-col items-center gap-0.5 w-full border-b border-border/60 pb-2">
-								<span className="font-mono text-[11px] text-muted-foreground">
-									{item.date}
-								</span>
-								<span className="font-mono text-xs font-semibold text-foreground">
-									{item.time}
-								</span>
+					{dayGroups.map((group, groupIndex) => (
+						<div key={group.dateKey} className="flex items-start shrink-0">
+							<div className="flex flex-col shrink-0">
+								{/* Sticky Day Header */}
+								<div className="sticky left-0 z-10 self-start mb-2 pointer-events-none">
+									<span className="font-mono text-xs font-semibold text-foreground bg-secondary/90 backdrop-blur-xs px-2.5 py-0.5 rounded-md border border-border/60 inline-flex items-center shadow-xs">
+										{group.dayLabel}
+									</span>
+								</div>
+
+								{/* Cards for this day */}
+								<div className="flex gap-2.5">
+									{group.items.map((item, i) => (
+										<div
+											key={`${group.dateKey}-${item.time}-${i}`}
+											className="flex flex-col items-center justify-between gap-3 p-3 border border-border bg-card hover:bg-muted/30 transition-colors shrink-0 min-w-[108px] snap-center rounded-lg"
+										>
+											{/* Header: Date & Time */}
+											<div className="flex flex-col items-center gap-0.5 w-full border-b border-border/60 pb-2">
+												<span className="font-mono text-[11px] text-muted-foreground">
+													{item.date}
+												</span>
+												<span className="font-mono text-xs font-semibold text-foreground">
+													{item.time}
+												</span>
+											</div>
+
+											{/* Center: Condition & Metric Icon */}
+											<div className="flex flex-col items-center gap-1.5 py-1">
+												<div className="h-5 shrink-0 flex items-center justify-center">
+													{item.pop > 0 && (
+														<span className="font-mono text-[10px] leading-none px-1.5 py-0.5 border border-border/60 bg-muted/40 text-foreground rounded whitespace-nowrap">
+															{item.pop}% rain
+														</span>
+													)}
+												</div>
+												<div className="flex items-center justify-center size-8 shrink-0">
+													{renderIcon(activeTab, item)}
+												</div>
+											</div>
+
+											{/* Footer: Value & Sub-reading */}
+											<div className="flex flex-col items-center gap-0.5 w-full border-t border-border/60 pt-2 text-center">
+												<span className="font-mono text-sm font-semibold text-foreground">
+													{activeConfig.formatter(item[activeConfig.dataKey] as number)}
+												</span>
+												{activeTab === "temperature" && (
+													<span className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+														Feels {item.feels_like}°
+													</span>
+												)}
+												{activeTab === "wind" && (
+													<span className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+														{getWindDirection(item.wind_deg)} {item.wind_deg}°
+													</span>
+												)}
+												{activeTab === "humidity" && (
+													<span className="font-mono text-[11px] text-muted-foreground">
+														Humidity
+													</span>
+												)}
+												{activeTab === "pressure" && (
+													<span className="font-mono text-[11px] text-muted-foreground">
+														Pressure
+													</span>
+												)}
+												{activeTab === "clouds" && (
+													<span className="font-mono text-[11px] text-muted-foreground">
+														Coverage
+													</span>
+												)}
+												{activeTab === "visibility" && (
+													<span className="font-mono text-[11px] text-muted-foreground">
+														Sightline
+													</span>
+												)}
+												{activeTab === "wet_bulb" && (
+													<span className="font-mono text-[11px] text-muted-foreground">
+														Index
+													</span>
+												)}
+											</div>
+										</div>
+									))}
+								</div>
 							</div>
 
-							{/* Center: Condition & Metric Icon */}
-							<div className="flex flex-col items-center gap-1.5 py-1">
-								<div className="h-5 shrink-0 flex items-center justify-center">
-									{item.pop > 0 && (
-										<span className="font-mono text-[10px] leading-none px-1.5 py-0.5 border border-border/60 bg-muted/40 text-foreground rounded whitespace-nowrap">
-											{item.pop}% rain
-										</span>
-									)}
-								</div>
-								<div className="flex items-center justify-center size-8 shrink-0">
-									{renderIcon(activeTab, item)}
-								</div>
-							</div>
-
-							{/* Footer: Value & Sub-reading */}
-							<div className="flex flex-col items-center gap-0.5 w-full border-t border-border/60 pt-2 text-center">
-								<span className="font-mono text-sm font-semibold text-foreground">
-									{activeConfig.formatter(item[activeConfig.dataKey] as number)}
-								</span>
-								{activeTab === "temperature" && (
-									<span className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
-										Feels {item.feels_like}°
-									</span>
-								)}
-								{activeTab === "wind" && (
-									<span className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
-										{getWindDirection(item.wind_deg)} {item.wind_deg}°
-									</span>
-								)}
-								{activeTab === "humidity" && (
-									<span className="font-mono text-[11px] text-muted-foreground">
-										Humidity
-									</span>
-								)}
-								{activeTab === "pressure" && (
-									<span className="font-mono text-[11px] text-muted-foreground">
-										Pressure
-									</span>
-								)}
-								{activeTab === "clouds" && (
-									<span className="font-mono text-[11px] text-muted-foreground">
-										Coverage
-									</span>
-								)}
-								{activeTab === "visibility" && (
-									<span className="font-mono text-[11px] text-muted-foreground">
-										Sightline
-									</span>
-								)}
-								{activeTab === "wet_bulb" && (
-									<span className="font-mono text-[11px] text-muted-foreground">
-										Index
-									</span>
-								)}
-							</div>
+							{/* Separator between days */}
+							{groupIndex < dayGroups.length - 1 && (
+								<div className="w-px self-stretch bg-border/60 mx-2.5 shrink-0 my-0.5" />
+							)}
 						</div>
 					))}
 				</div>

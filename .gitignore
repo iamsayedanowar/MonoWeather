@@ -19,5 +19,4 @@ dist-ssr
 *.sln
 *.sw?
 .env
-x.json
-docs
+.agents
