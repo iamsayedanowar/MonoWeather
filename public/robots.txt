@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Host
+Host: https://mono-weather.pages.dev
+
+# Sitemap
+Sitemap: https://mono-weather.pages.dev/sitemap.xml
