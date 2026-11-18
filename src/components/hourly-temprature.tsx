@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { format } from "date-fns";
 import type { ForecastData } from "@/api/types";
@@ -43,6 +43,7 @@ interface ChartDataPoint {
 	time: string;
 	fullTime: string;
 	date: string;
+	shortDate: string;
 	temp: number;
 	feels_like: number;
 	humidity: number;
@@ -58,6 +59,7 @@ interface ChartDataPoint {
 	description: string;
 }
 
+type TimeRange = "24h" | "5d";
 type TabId = "temperature" | "wind" | "humidity" | "pressure" | "clouds" | "visibility" | "wet_bulb";
 
 export function HourlyTemperature({ data }: HourlyTemperatureProps) {
@@ -74,6 +76,9 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 	} = useUnitSettings();
 	const [activeTab, setActiveTab] = useState<TabId>("temperature");
 	const [showChart, setShowChart] = useState<boolean>(false);
+	const [timeRange, setTimeRange] = useState<TimeRange>(() =>
+		typeof window !== "undefined" && window.innerWidth < 640 ? "24h" : "5d"
+	);
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -154,12 +159,13 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 		return directions[index % 16];
 	};
 
-	const chartData: ChartDataPoint[] = data.list.map((item) => {
+	const chartData: ChartDataPoint[] = data.list.map((item, index) => {
 		const date = new Date(item.dt * 1000);
 		return {
 			time: formatTime(date, "short"),
 			fullTime: formatTime(date, "full"),
 			date: format(date, "d MMM"),
+			shortDate: index === 0 ? "Today" : format(date, "d MMM"),
 			temp: Math.round(getChartTemp(item.main.temp)),
 			feels_like: Math.round(getChartTemp(item.main.feels_like)),
 			humidity: item.main.humidity,
@@ -175,6 +181,27 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 			description: item.weather[0].description,
 		};
 	});
+
+	const displayData = useMemo(() => {
+		return timeRange === "24h" ? chartData.slice(0, 8) : chartData;
+	}, [chartData, timeRange]);
+
+	const xTicks = useMemo(() => {
+		if (!displayData.length) return [];
+		if (timeRange === "24h") {
+			return displayData.filter((_, i) => i % 2 === 0).map((d) => d.fullTime);
+		}
+		return displayData.filter((_, i) => i % 8 === 0).map((d) => d.fullTime);
+	}, [displayData, timeRange]);
+
+	const formatXTick = useCallback(
+		(fullTime: string) => {
+			const point = displayData.find((d) => d.fullTime === fullTime);
+			if (!point) return fullTime;
+			return timeRange === "24h" ? point.time : point.shortDate;
+		},
+		[displayData, timeRange]
+	);
 
 	const tabConfigs: { id: TabId; label: string; unitLabel: string; dataKey: keyof ChartDataPoint; formatter: (v: number) => string; }[] = [
 		{ id: "temperature", label: "Temperature", unitLabel: `°${tempUnit}`, dataKey: "temp", formatter: (val) => `${val}°` },
@@ -287,12 +314,37 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 				{showChart && (
 					<div className="border border-border bg-card/60 p-3 pt-4 rounded-lg">
 						<div className="flex items-center justify-between font-mono text-xs text-muted-foreground px-2 mb-2">
-							<span>{activeConfig.label} trend ({activeConfig.unitLabel})</span>
-							<span>5-day outlook</span>
+							<span className="truncate">
+								{activeConfig.label} trend ({activeConfig.unitLabel})
+							</span>
+							<div className="flex items-center gap-1 shrink-0 ml-2">
+								<button
+									type="button"
+									onClick={() => setTimeRange("24h")}
+									className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors cursor-pointer border ${
+										timeRange === "24h"
+											? "bg-secondary text-foreground border-border font-medium"
+											: "bg-background text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60"
+									}`}
+								>
+									24h
+								</button>
+								<button
+									type="button"
+									onClick={() => setTimeRange("5d")}
+									className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors cursor-pointer border ${
+										timeRange === "5d"
+											? "bg-secondary text-foreground border-border font-medium"
+											: "bg-background text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60"
+									}`}
+								>
+									5d
+								</button>
+							</div>
 						</div>
 						<div className="h-44 w-full">
 							<ResponsiveContainer width="100%" height="100%">
-								<AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+								<AreaChart data={displayData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
 									<defs>
 										<linearGradient id="monochromeGradient" x1="0" y1="0" x2="0" y2="1">
 											<stop offset="5%" stopColor="var(--foreground)" stopOpacity={0.20} />
@@ -301,12 +353,13 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 									</defs>
 									<CartesianGrid strokeDasharray="2 2" stroke="var(--border)" vertical={false} />
 									<XAxis
-										dataKey="time"
+										dataKey="fullTime"
+										ticks={xTicks}
+										tickFormatter={formatXTick}
 										stroke="var(--muted-foreground)"
 										fontSize={10}
 										tickLine={false}
 										axisLine={{ stroke: "var(--border)" }}
-										interval={3}
 									/>
 									<YAxis
 										stroke="var(--muted-foreground)"
