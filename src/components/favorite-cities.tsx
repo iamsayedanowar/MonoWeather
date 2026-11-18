@@ -132,17 +132,14 @@ export function FavoriteCities() {
 		if (!el) return;
 
 		const handleWheel = (e: WheelEvent) => {
-			if (e.deltaY !== 0) {
-				const maxScroll = el.scrollWidth - el.clientWidth;
-				if (maxScroll > 0) {
-					if (
-						(e.deltaY > 0 && el.scrollLeft < maxScroll) ||
-						(e.deltaY < 0 && el.scrollLeft > 0)
-					) {
-						e.preventDefault();
-						el.scrollLeft += e.deltaY;
-					}
-				}
+			// Prevent default page scroll whenever cursor is over the cards
+			e.preventDefault();
+
+			const rawDelta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+			const multiplier = e.deltaMode === 1 ? 24 : e.deltaMode === 2 ? el.clientWidth : 1;
+			const delta = rawDelta * multiplier;
+			if (delta !== 0) {
+				el.scrollLeft += delta;
 			}
 		};
 
@@ -227,7 +224,7 @@ export function FavoriteCities() {
 				onMouseMove={handleMouseMove}
 				onMouseUp={handleMouseUp}
 				onMouseLeave={handleMouseUp}
-				className={`flex gap-2.5 overflow-x-auto pb-1 pt-0.5 w-full scrollbar-hide touch-pan-x ${isDragging ? "cursor-grabbing select-none" : "cursor-grab"
+				className={`flex gap-2.5 overflow-x-auto pb-1 pt-0.5 w-full scrollbar-hide touch-pan-x overscroll-contain ${isDragging ? "cursor-grabbing select-none" : "cursor-grab"
 					}`}
 				style={{
 					WebkitOverflowScrolling: "touch",
