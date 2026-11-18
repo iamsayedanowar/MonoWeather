@@ -23,6 +23,39 @@ interface CurrentWeatherProps {
 	locationName?: GeocodingResponse;
 }
 
+// Empirical formula for Wet-Bulb Temperature (Stull 2011)
+const calculateWetBulb = (T: number, rh: number) => {
+	return (
+		T * Math.atan(0.151977 * Math.sqrt(rh + 8.313659)) +
+		Math.atan(T + rh) -
+		Math.atan(rh - 1.676331) +
+		0.00391838 * Math.pow(rh, 1.5) * Math.atan(0.023101 * rh) -
+		4.686035
+	);
+};
+
+const WIND_DIRECTIONS = [
+	"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+	"S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
+];
+
+const getWindDirection = (degree: number) => {
+	const index = Math.round(((degree % 360) + 360) % 360 / 22.5) % 16;
+	return WIND_DIRECTIONS[index];
+};
+
+// Wind Beaufort Scale
+const getBeaufortDescription = (kmh: number) => {
+	if (kmh < 2) return "Calm";
+	if (kmh < 12) return "Light Breeze";
+	if (kmh < 20) return "Gentle Breeze";
+	if (kmh < 29) return "Moderate Wind";
+	if (kmh < 39) return "Fresh Breeze";
+	if (kmh < 50) return "Strong Wind";
+	if (kmh < 62) return "High Wind";
+	return "Gale Warning";
+};
+
 export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 	const {
 		weather: [currentWeather],
@@ -46,38 +79,6 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 		distanceUnit,
 	} = useUnitSettings();
 
-	// Empirical formula for Wet-Bulb Temperature (Stull 2011)
-	const getWetBulbTemperature = (T: number, rh: number) => {
-		return (
-			T * Math.atan(0.151977 * Math.sqrt(rh + 8.313659)) +
-			Math.atan(T + rh) -
-			Math.atan(rh - 1.676331) +
-			0.00391838 * Math.pow(rh, 1.5) * Math.atan(0.023101 * rh) -
-			4.686035
-		);
-	};
-
-	const getWindDirection = (degree: number) => {
-		const directions = [
-			"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-			"S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
-		];
-		const index = Math.round(((degree % 360) + 360) % 360 / 22.5) % 16;
-		return directions[index];
-	};
-
-	// Wind Beaufort Scale
-	const getBeaufortDescription = (kmh: number) => {
-		if (kmh < 2) return "Calm";
-		if (kmh < 12) return "Light Breeze";
-		if (kmh < 20) return "Gentle Breeze";
-		if (kmh < 29) return "Moderate Wind";
-		if (kmh < 39) return "Fresh Breeze";
-		if (kmh < 50) return "Strong Wind";
-		if (kmh < 62) return "High Wind";
-		return "Gale Warning";
-	};
-
 	// Solar arc calculation
 	const nowSeconds = Math.floor(Date.now() / 1000);
 	const dayDuration = Math.max(1, sunset - sunrise);
@@ -87,7 +88,7 @@ export function CurrentWeather({ data, locationName }: CurrentWeatherProps) {
 	const isDay = nowSeconds >= sunrise && nowSeconds < sunset;
 
 	const windKmh = Number((speed * 3.6).toFixed(1));
-	const wetBulb = getWetBulbTemperature(temp, humidity);
+	const wetBulb = calculateWetBulb(temp, humidity);
 
 	return (
 		<Card className="w-full flex-1 border-border bg-card rounded-lg">

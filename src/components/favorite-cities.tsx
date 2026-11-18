@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWeatherQuery } from "@/hooks/use-weather";
 import { X, Loader2, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
@@ -16,7 +16,7 @@ interface FavoriteCityTabletProps {
 	isDragActive: () => boolean;
 }
 
-function FavoriteCityTablet({
+const FavoriteCityTablet = memo(function FavoriteCityTablet({
 	id,
 	name,
 	lat,
@@ -25,7 +25,8 @@ function FavoriteCityTablet({
 	isDragActive,
 }: FavoriteCityTabletProps) {
 	const navigate = useNavigate();
-	const { data: weather, isLoading } = useWeatherQuery({ lat, lon });
+	const coords = useMemo(() => ({ lat, lon }), [lat, lon]);
+	const { data: weather, isLoading } = useWeatherQuery(coords);
 	const { formatTemp } = useUnitSettings();
 
 	const handleClick = () => {
@@ -87,7 +88,7 @@ function FavoriteCityTablet({
 			) : null}
 		</div>
 	);
-}
+});
 
 export function FavoriteCities() {
 	const { favorites, removeFavorite } = useFavorites();

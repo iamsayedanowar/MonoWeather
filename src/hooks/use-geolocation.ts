@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Coordinates } from "@/api/types";
 
 interface GeolocationState {
@@ -14,7 +14,7 @@ export function useGeolocation() {
 		isLoading: true,
 	});
 
-	const getLocation = () => {
+	const getLocation = useCallback(() => {
 		setLocationData((prev) => ({ ...prev, isLoading: true, error: null }));
 
 		if (!navigator.geolocation) {
@@ -62,14 +62,16 @@ export function useGeolocation() {
 			},
 			{
 				enableHighAccuracy: true,
+				timeout: 10000,
+				maximumAge: 60000,
 			}
 		);
-	};
+	}, []);
 
 	// Get location on component mount
 	useEffect(() => {
 		getLocation();
-	}, []);
+	}, [getLocation]);
 
 	return {
 		...locationData,

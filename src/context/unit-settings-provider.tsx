@@ -1,4 +1,4 @@
-import { createContext, useContext, PropsWithChildren } from "react";
+import { createContext, useContext, useMemo, useCallback, type PropsWithChildren } from "react";
 import { format as formatFns } from "date-fns";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { convertPressure, PRESSURE_UNITS, type PressureUnit } from "@/lib/pressure";
@@ -57,7 +57,7 @@ export function UnitSettingsProvider({ children }: PropsWithChildren) {
 	const [settings, setSettings] = useLocalStorage<UnitSettings>(STORAGE_KEY, DEFAULT_SETTINGS);
 
 	// Ensure all fields exist in case of partial cached data
-	const currentSettings: UnitSettings = {
+	const currentSettings: UnitSettings = useMemo(() => ({
 		tempUnit: settings?.tempUnit || DEFAULT_SETTINGS.tempUnit,
 		timeFormat: settings?.timeFormat || DEFAULT_SETTINGS.timeFormat,
 		windSpeedUnit: settings?.windSpeedUnit || DEFAULT_SETTINGS.windSpeedUnit,
@@ -66,43 +66,43 @@ export function UnitSettingsProvider({ children }: PropsWithChildren) {
 				? settings.pressureUnit
 				: DEFAULT_SETTINGS.pressureUnit,
 		distanceUnit: settings?.distanceUnit || DEFAULT_SETTINGS.distanceUnit,
-	};
+	}), [settings]);
 
-	const setTempUnit = (unit: TempUnit) => {
+	const setTempUnit = useCallback((unit: TempUnit) => {
 		setSettings((prev) => ({ ...prev, tempUnit: unit }));
-	};
+	}, [setSettings]);
 
-	const setTimeFormat = (format: TimeFormatUnit) => {
+	const setTimeFormat = useCallback((format: TimeFormatUnit) => {
 		setSettings((prev) => ({ ...prev, timeFormat: format }));
-	};
+	}, [setSettings]);
 
-	const setWindSpeedUnit = (unit: WindSpeedUnit) => {
+	const setWindSpeedUnit = useCallback((unit: WindSpeedUnit) => {
 		setSettings((prev) => ({ ...prev, windSpeedUnit: unit }));
-	};
+	}, [setSettings]);
 
-	const setPressureUnit = (unit: PressureUnit) => {
+	const setPressureUnit = useCallback((unit: PressureUnit) => {
 		setSettings((prev) => ({ ...prev, pressureUnit: unit }));
-	};
+	}, [setSettings]);
 
-	const setDistanceUnit = (unit: DistanceUnit) => {
+	const setDistanceUnit = useCallback((unit: DistanceUnit) => {
 		setSettings((prev) => ({ ...prev, distanceUnit: unit }));
-	};
+	}, [setSettings]);
 
 	// Temperature helpers
-	const getChartTemp = (tempInCelsius: number): number => {
+	const getChartTemp = useCallback((tempInCelsius: number): number => {
 		if (currentSettings.tempUnit === "F") {
 			return (tempInCelsius * 9) / 5 + 32;
 		}
 		return tempInCelsius;
-	};
+	}, [currentSettings.tempUnit]);
 
-	const formatTemp = (tempInCelsius: number): string => {
+	const formatTemp = useCallback((tempInCelsius: number): string => {
 		const temp = getChartTemp(tempInCelsius);
 		return `${Math.round(temp)}°`;
-	};
+	}, [getChartTemp]);
 
 	// Time helpers
-	const formatTime = (
+	const formatTime = useCallback((
 		dateInput: Date | number,
 		mode: "short" | "full" | "withSeconds" = "short"
 	): string => {
@@ -116,10 +116,10 @@ export function UnitSettingsProvider({ children }: PropsWithChildren) {
 			return formatFns(d, is12h ? "MMM d, h:mm a" : "MMM d, HH:mm");
 		}
 		return formatFns(d, is12h ? "h:mm a" : "HH:mm");
-	};
+	}, [currentSettings.timeFormat]);
 
 	// Wind speed helpers (OpenWeather API sends m/s)
-	const getWindSpeed = (speedMps: number): number => {
+	const getWindSpeed = useCallback((speedMps: number): number => {
 		switch (currentSettings.windSpeedUnit) {
 			case "mph":
 				return Number((speedMps * 2.236936).toFixed(1));
@@ -131,39 +131,39 @@ export function UnitSettingsProvider({ children }: PropsWithChildren) {
 			default:
 				return Number((speedMps * 3.6).toFixed(1));
 		}
-	};
+	}, [currentSettings.windSpeedUnit]);
 
-	const formatWindSpeed = (speedMps: number): string => {
+	const formatWindSpeed = useCallback((speedMps: number): string => {
 		const val = getWindSpeed(speedMps);
 		return `${val} ${currentSettings.windSpeedUnit}`;
-	};
+	}, [getWindSpeed, currentSettings.windSpeedUnit]);
 
 	// Pressure helpers (OpenWeather API sends hPa)
-	const getPressure = (pressureHpa: number): number => {
+	const getPressure = useCallback((pressureHpa: number): number => {
 		return convertPressure(pressureHpa, currentSettings.pressureUnit);
-	};
+	}, [currentSettings.pressureUnit]);
 
-	const formatPressure = (pressureHpa: number): string => {
+	const formatPressure = useCallback((pressureHpa: number): string => {
 		const val = getPressure(pressureHpa);
 		return `${val} ${currentSettings.pressureUnit}`;
-	};
+	}, [getPressure, currentSettings.pressureUnit]);
 
 	// Distance helpers (OpenWeather API sends visibility in meters)
-	const getDistance = (meters: number): number => {
+	const getDistance = useCallback((meters: number): number => {
 		if (currentSettings.distanceUnit === "mph") {
 			// Miles conversion
 			return Number(((meters / 1000) * 0.621371).toFixed(1));
 		}
 		// Kilometers
 		return Number((meters / 1000).toFixed(1));
-	};
+	}, [currentSettings.distanceUnit]);
 
-	const formatDistance = (meters: number): string => {
+	const formatDistance = useCallback((meters: number): string => {
 		const val = getDistance(meters);
 		return `${val} ${currentSettings.distanceUnit}`;
-	};
+	}, [getDistance, currentSettings.distanceUnit]);
 
-	const value: UnitSettingsContextType = {
+	const value: UnitSettingsContextType = useMemo(() => ({
 		...currentSettings,
 		setTempUnit,
 		setTimeFormat,
@@ -184,7 +184,23 @@ export function UnitSettingsProvider({ children }: PropsWithChildren) {
 		formatPressure,
 		getDistance,
 		formatDistance,
-	};
+	}), [
+		currentSettings,
+		setTempUnit,
+		setTimeFormat,
+		setWindSpeedUnit,
+		setPressureUnit,
+		setDistanceUnit,
+		formatTemp,
+		getChartTemp,
+		formatTime,
+		getWindSpeed,
+		formatWindSpeed,
+		getPressure,
+		formatPressure,
+		getDistance,
+		formatDistance,
+	]);
 
 	return (
 		<UnitSettingsContext.Provider value={value}>

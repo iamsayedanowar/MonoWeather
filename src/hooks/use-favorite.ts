@@ -1,4 +1,5 @@
 // src/hooks/use-favorites.ts
+import { useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocalStorage } from "./use-local-storage";
 
@@ -60,11 +61,23 @@ export function useFavorites() {
 		},
 	});
 
+	const favoriteKeySet = useMemo(() => {
+		const set = new Set<string>();
+		for (const fav of favorites) {
+			set.add(`${fav.lat.toFixed(4)},${fav.lon.toFixed(4)}`);
+		}
+		return set;
+	}, [favorites]);
+
+	const isFavorite = useCallback(
+		(lat: number, lon: number) => favoriteKeySet.has(`${lat.toFixed(4)},${lon.toFixed(4)}`),
+		[favoriteKeySet]
+	);
+
 	return {
-		favorites: favoritesQuery.data,
+		favorites: favoritesQuery.data ?? [],
 		addFavorite,
 		removeFavorite,
-		isFavorite: (lat: number, lon: number) =>
-			favorites.some((city) => city.lat === lat && city.lon === lon),
+		isFavorite,
 	};
 }

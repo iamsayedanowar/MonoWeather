@@ -1,16 +1,36 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "./components/ui/sonner";
 import { WeatherDashboard } from "./pages/weather-dashboard";
 import { Layout } from "./components/layout";
 import { ThemeProvider } from "./context/theme-provider";
 import { UnitSettingsProvider } from "./context/unit-settings-provider";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import { CityPage } from "./pages/city-page";
 import { ScrollToTop } from "./components/scroll-to-top";
-import { PrivacyPolicyPage } from "./pages/legal/privacy-policy";
-import { TermsAndConditionsPage } from "./pages/legal/terms-and-conditions";
-import { DisclaimerPage } from "./pages/legal/disclaimer";
+import WeatherSkeleton from "./components/loading-skeleton";
+
+// Lazy-load sub-routes and legal pages to minimize initial bundle payload
+const CityPage = lazy(() =>
+	import("./pages/city-page").then((m) => ({ default: m.CityPage }))
+);
+const PrivacyPolicyPage = lazy(() =>
+	import("./pages/legal/privacy-policy").then((m) => ({ default: m.PrivacyPolicyPage }))
+);
+const TermsAndConditionsPage = lazy(() =>
+	import("./pages/legal/terms-and-conditions").then((m) => ({ default: m.TermsAndConditionsPage }))
+);
+const DisclaimerPage = lazy(() =>
+	import("./pages/legal/disclaimer").then((m) => ({ default: m.DisclaimerPage }))
+);
+
+// Lazy-load ReactQueryDevtools only in development
+const ReactQueryDevtools = import.meta.env.DEV
+	? lazy(() =>
+			import("@tanstack/react-query-devtools").then((d) => ({
+				default: d.ReactQueryDevtools,
+			}))
+	  )
+	: null;
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -31,23 +51,29 @@ function App() {
 				<UnitSettingsProvider>
 					<ThemeProvider defaultTheme="dark">
 						<Layout>
-							<Routes>
-								<Route path="/" element={<WeatherDashboard />} />
-								<Route path="/city/:cityName" element={<CityPage />} />
-								<Route path="/privacy" element={<PrivacyPolicyPage />} />
-								<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-								<Route path="/terms" element={<TermsAndConditionsPage />} />
-								<Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
-								<Route path="/disclaimer" element={<DisclaimerPage />} />
-								<Route path="/legal" element={<PrivacyPolicyPage />} />
-								<Route path="*" element={<Navigate to="/" replace />} />
-							</Routes>
+							<Suspense fallback={<WeatherSkeleton />}>
+								<Routes>
+									<Route path="/" element={<WeatherDashboard />} />
+									<Route path="/city/:cityName" element={<CityPage />} />
+									<Route path="/privacy" element={<PrivacyPolicyPage />} />
+									<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+									<Route path="/terms" element={<TermsAndConditionsPage />} />
+									<Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+									<Route path="/disclaimer" element={<DisclaimerPage />} />
+									<Route path="/legal" element={<PrivacyPolicyPage />} />
+									<Route path="*" element={<Navigate to="/" replace />} />
+								</Routes>
+							</Suspense>
 						</Layout>
 						<Toaster richColors />
 					</ThemeProvider>
 				</UnitSettingsProvider>
 			</BrowserRouter>
-			<ReactQueryDevtools initialIsOpen={false} />
+			{ReactQueryDevtools && (
+				<Suspense fallback={null}>
+					<ReactQueryDevtools initialIsOpen={false} />
+				</Suspense>
+			)}
 		</QueryClientProvider>
 	);
 }

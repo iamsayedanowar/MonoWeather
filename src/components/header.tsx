@@ -29,7 +29,10 @@ export function Header() {
 							<img
 								src={resolvedTheme === "dark" ? "/logo.svg" : "/logo2.svg"}
 								alt="MonoWeather Home"
+								width={160}
+								height={32}
 								className="h-8 w-auto object-contain transition-opacity group-hover:opacity-85"
+								{...({ fetchpriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>)}
 							/>
 						</div>
 					</Link>

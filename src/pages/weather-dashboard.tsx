@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
 	useForecastQuery,
 	useReverseGeocodeQuery,
@@ -15,13 +16,26 @@ import {
 	MapPinOff,
 	LocateFixed,
 	ArrowRight,
+	Radar,
 } from "lucide-react";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { HourlyTemperature } from "../components/hourly-temprature";
 import WeatherSkeleton from "../components/loading-skeleton";
 import { FavoriteCities } from "@/components/favorite-cities";
 import { AirPollution } from "@/components/air-pollution";
-import { WeatherMap } from "@/components/weather-map";
+
+const WeatherMap = lazy(() =>
+	import("@/components/weather-map").then((m) => ({ default: m.WeatherMap }))
+);
+
+function WeatherMapSkeleton() {
+	return (
+		<div className="h-full min-h-[340px] w-full rounded-lg border border-border bg-card flex flex-col items-center justify-center p-6 space-y-2 font-mono text-xs text-muted-foreground animate-pulse">
+			<Radar className="size-6 text-muted-foreground/60 animate-spin" />
+			<span>Initializing radar map...</span>
+		</div>
+	);
+}
 
 const DEFAULT_STATIONS = [
 	{ name: "New Delhi", country: "India", lat: 28.6138954, lon: 77.2090057, tag: "Subtropical" },
@@ -232,11 +246,13 @@ export function WeatherDashboard() {
 				</div>
 
 				<div className="lg:col-span-5 flex flex-col min-w-0">
-					<WeatherMap
-						lat={weatherQuery.data.coord.lat}
-						lon={weatherQuery.data.coord.lon}
-						city={locationName?.name || weatherQuery.data.name}
-					/>
+					<Suspense fallback={<WeatherMapSkeleton />}>
+						<WeatherMap
+							lat={weatherQuery.data.coord.lat}
+							lon={weatherQuery.data.coord.lon}
+							city={locationName?.name || weatherQuery.data.name}
+						/>
+					</Suspense>
 				</div>
 			</div>
 

@@ -1,3 +1,4 @@
+import { useMemo, lazy, Suspense } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import {
 	useWeatherQuery,
@@ -6,14 +7,26 @@ import {
 	useReverseGeocodeQuery,
 } from "@/hooks/use-weather";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
+import { AlertTriangle, ArrowLeft, RefreshCw, Radar } from "lucide-react";
 import { CurrentWeather } from "../components/current-weather";
 import { HourlyTemperature } from "../components/hourly-temprature";
 import WeatherSkeleton from "../components/loading-skeleton";
 import { FavoriteButton } from "@/components/favorite-button";
 import { AirPollution } from "@/components/air-pollution";
-import { WeatherMap } from "@/components/weather-map";
 import { Button } from "@/components/ui/button";
+
+const WeatherMap = lazy(() =>
+	import("@/components/weather-map").then((m) => ({ default: m.WeatherMap }))
+);
+
+function WeatherMapSkeleton() {
+	return (
+		<div className="h-full min-h-[340px] w-full rounded-lg border border-border bg-card flex flex-col items-center justify-center p-6 space-y-2 font-mono text-xs text-muted-foreground animate-pulse">
+			<Radar className="size-6 text-muted-foreground/60 animate-spin" />
+			<span>Initializing radar map...</span>
+		</div>
+	);
+}
 
 export function CityPage() {
 	const [searchParams] = useSearchParams();
@@ -21,7 +34,7 @@ export function CityPage() {
 	const lat = parseFloat(searchParams.get("lat") || "0");
 	const lon = parseFloat(searchParams.get("lon") || "0");
 
-	const coordinates = { lat, lon };
+	const coordinates = useMemo(() => ({ lat, lon }), [lat, lon]);
 
 	const weatherQuery = useWeatherQuery(coordinates);
 	const forecastQuery = useForecastQuery(coordinates);
@@ -136,11 +149,13 @@ export function CityPage() {
 				</div>
 
 				<div className="lg:col-span-5 flex flex-col min-w-0">
-					<WeatherMap
-						lat={lat}
-						lon={lon}
-						city={displayName}
-					/>
+					<Suspense fallback={<WeatherMapSkeleton />}>
+						<WeatherMap
+							lat={lat}
+							lon={lon}
+							city={displayName}
+						/>
+					</Suspense>
 				</div>
 			</div>
 

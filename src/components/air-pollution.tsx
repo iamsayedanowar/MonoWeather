@@ -132,21 +132,21 @@ const pollutantMetas: PollutantMeta[] = [
 	},
 ];
 
+const getRatioTier = (val: number, limit: number) => {
+	const ratio = val / limit;
+	if (ratio <= 0.6) return { badge: "Safe", variant: "bg-muted text-muted-foreground" };
+	if (ratio <= 1.0) return { badge: "Moderate", variant: "bg-secondary text-foreground" };
+	if (ratio <= 1.5) return { badge: "High", variant: "bg-primary text-primary-foreground font-medium" };
+	return { badge: "Alert", variant: "bg-destructive text-destructive-foreground font-semibold" };
+};
+
 export function AirPollution({ data }: AirPollutionProps) {
 	const aqi = data.list[0].main.aqi;
 	const currentTier = aqiTiers.find((t) => t.index === aqi) || aqiTiers[0];
 	const components = data.list[0].components;
 
-	const getRatioTier = (val: number, limit: number) => {
-		const ratio = val / limit;
-		if (ratio <= 0.6) return { badge: "Safe", variant: "bg-muted text-muted-foreground" };
-		if (ratio <= 1.0) return { badge: "Moderate", variant: "bg-secondary text-foreground" };
-		if (ratio <= 1.5) return { badge: "High", variant: "bg-primary text-primary-foreground font-medium" };
-		return { badge: "Alert", variant: "bg-destructive text-destructive-foreground font-semibold" };
-	};
-
 	return (
-		<Card className="w-full border-border bg-card rounded-lg">
+		<Card className="w-full border-border bg-card rounded-lg content-visibility-auto">
 			<CardHeader className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
 				<div className="space-y-0.5">
 					<CardTitle className="text-base font-semibold tracking-tight text-foreground flex items-center gap-2">

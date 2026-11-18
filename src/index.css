@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 :root {
+	color-scheme: light;
 	--background: oklch(0.985 0.003 245);
 	--foreground: oklch(0.20 0.015 250);
 	--card: oklch(1.000 0 0);
@@ -59,6 +60,7 @@
 }
 
 .dark {
+	color-scheme: dark;
 	--background: oklch(0.145 0.008 250);
 	--foreground: oklch(0.96 0.005 245);
 	--card: oklch(0.185 0.009 250);
@@ -183,4 +185,10 @@
 .recharts-zIndex-layer_100,
 .recharts-active-dot {
 	outline: none !important;
+}
+
+/* Content Visibility Optimization for off-screen / below-the-fold content */
+.content-visibility-auto {
+	content-visibility: auto;
+	contain-intrinsic-size: auto none auto 400px;
 }

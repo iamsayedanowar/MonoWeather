@@ -20,10 +20,19 @@ import { useFavorites } from "@/hooks/use-favorite";
 export function CitySearch() {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
+	const [debouncedQuery, setDebouncedQuery] = useState("");
 	const navigate = useNavigate();
 	const { formatTime } = useUnitSettings();
 
-	const { data: locations, isLoading } = useLocationSearch(query);
+	// Debounce search query to eliminate request waterfalls
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedQuery(query.trim());
+		}, 250);
+		return () => clearTimeout(timer);
+	}, [query]);
+
+	const { data: locations, isLoading } = useLocationSearch(debouncedQuery);
 	const { favorites } = useFavorites();
 	const { history, clearHistory, addToHistory } = useSearchHistory();
 
@@ -40,28 +49,24 @@ export function CitySearch() {
 	}, []);
 
 	const handleSelect = (value: string) => {
-		const [latStr, lonStr] = value.split("|");
+		const [latStr, lonStr, valName, valCountry, valState] = value.split("|");
 		const lat = parseFloat(latStr);
 		const lon = parseFloat(lonStr);
 
-		const originalLocation =
-			locations?.find((l) => Math.abs(l.lat - lat) < 0.001 && Math.abs(l.lon - lon) < 0.001) ||
-			favorites.find((f) => Math.abs(f.lat - lat) < 0.001 && Math.abs(f.lon - lon) < 0.001) ||
-			history.find((h) => Math.abs(h.lat - lat) < 0.001 && Math.abs(h.lon - lon) < 0.001);
-
-		if (!originalLocation) return;
+		const resolvedName = valName || locations?.find((l) => Math.abs(l.lat - lat) < 0.001 && Math.abs(l.lon - lon) < 0.001)?.name;
+		if (!resolvedName) return;
 
 		addToHistory.mutate({
-			query,
-			name: originalLocation.name,
+			query: debouncedQuery || query,
+			name: resolvedName,
 			lat,
 			lon,
-			country: originalLocation.country,
-			state: originalLocation.state || undefined,
+			country: valCountry || "",
+			state: valState || undefined,
 		});
 
 		setOpen(false);
-		navigate(`/city/${originalLocation.name}?lat=${lat}&lon=${lon}`);
+		navigate(`/city/${resolvedName}?lat=${lat}&lon=${lon}`);
 	};
 
 	return (

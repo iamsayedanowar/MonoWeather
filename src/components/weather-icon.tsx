@@ -8,6 +8,8 @@ export function WeatherIcon({ iconCode, className = "h-10 w-10" }: WeatherIconPr
         <img 
             src={`/icons/${iconCode}.svg`} 
             alt={`Weather icon ${iconCode}`} 
+            loading="lazy"
+            decoding="async"
             className={`object-contain ${className}`}
         />
     );

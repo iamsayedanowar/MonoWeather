@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { format } from "date-fns";
 import type { ForecastData } from "@/api/types";
@@ -16,15 +16,11 @@ import {
 	ChevronRight,
 } from "lucide-react";
 import { WeatherIcon } from "./weather-icon";
-import {
-	ResponsiveContainer,
-	AreaChart,
-	Area,
-	XAxis,
-	YAxis,
-	Tooltip,
-	CartesianGrid,
-} from "recharts";
+import type { ChartDataPoint, ActiveTabConfig, TabId } from "./hourly-temperature-chart";
+
+const HourlyTemperatureChart = lazy(() =>
+	import("./hourly-temperature-chart").then((m) => ({ default: m.HourlyTemperatureChart }))
+);
 
 const calculateWetBulb = (T: number, RH: number): number => {
 	return (
@@ -36,33 +32,21 @@ const calculateWetBulb = (T: number, RH: number): number => {
 	);
 };
 
+const WIND_DIRECTIONS = [
+	"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+	"S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
+];
+
+const getWindDirection = (degree: number) => {
+	const index = Math.round(((degree % 360) + 360) % 360 / 22.5) % 16;
+	return WIND_DIRECTIONS[index];
+};
+
 interface HourlyTemperatureProps {
 	data: ForecastData;
 }
 
-interface ChartDataPoint {
-	time: string;
-	fullTime: string;
-	date: string;
-	dayName?: string;
-	shortDate: string;
-	temp: number;
-	feels_like: number;
-	humidity: number;
-	pop: number;
-	wind_speed: number;
-	wind_deg: number;
-	wind_gust: number;
-	visibility: number;
-	wet_bulb: number;
-	pressure: number;
-	clouds: number;
-	icon: string;
-	description: string;
-}
-
 type TimeRange = "24h" | "5d";
-type TabId = "temperature" | "wind" | "humidity" | "pressure" | "clouds" | "visibility" | "wet_bulb";
 
 export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 	const {
@@ -150,35 +134,31 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 		}
 	};
 
-	const getWindDirection = (degree: number) => {
-		const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-		const index = Math.round(((degree % 360) + 360) % 360 / 22.5);
-		return directions[index % 16];
-	};
-
-	const chartData: ChartDataPoint[] = data.list.map((item, index) => {
-		const date = new Date(item.dt * 1000);
-		return {
-			time: formatTime(date, "short"),
-			fullTime: formatTime(date, "full"),
-			date: format(date, "d MMM"),
-			dayName: format(date, "EEEE"),
-			shortDate: index === 0 ? "Today" : format(date, "d MMM"),
-			temp: Math.round(getChartTemp(item.main.temp)),
-			feels_like: Math.round(getChartTemp(item.main.feels_like)),
-			humidity: item.main.humidity,
-			pop: Math.round((item.pop ?? 0) * 100),
-			wind_speed: getWindSpeed(item.wind.speed),
-			wind_gust: getWindSpeed(item.wind.gust || item.wind.speed),
-			wind_deg: item.wind.deg,
-			visibility: getDistance(item.visibility),
-			wet_bulb: Math.round(getChartTemp(calculateWetBulb(item.main.temp, item.main.humidity))),
-			pressure: getPressure(item.main.pressure),
-			clouds: item.clouds.all,
-			icon: item.weather[0].icon,
-			description: item.weather[0].description,
-		};
-	});
+	const chartData: ChartDataPoint[] = useMemo(() => {
+		return data.list.map((item, index) => {
+			const date = new Date(item.dt * 1000);
+			return {
+				time: formatTime(date, "short"),
+				fullTime: formatTime(date, "full"),
+				date: format(date, "d MMM"),
+				dayName: format(date, "EEEE"),
+				shortDate: index === 0 ? "Today" : format(date, "d MMM"),
+				temp: Math.round(getChartTemp(item.main.temp)),
+				feels_like: Math.round(getChartTemp(item.main.feels_like)),
+				humidity: item.main.humidity,
+				pop: Math.round((item.pop ?? 0) * 100),
+				wind_speed: getWindSpeed(item.wind.speed),
+				wind_gust: getWindSpeed(item.wind.gust || item.wind.speed),
+				wind_deg: item.wind.deg,
+				visibility: getDistance(item.visibility),
+				wet_bulb: Math.round(getChartTemp(calculateWetBulb(item.main.temp, item.main.humidity))),
+				pressure: getPressure(item.main.pressure),
+				clouds: item.clouds.all,
+				icon: item.weather[0].icon,
+				description: item.weather[0].description,
+			};
+		});
+	}, [data.list, formatTime, getChartTemp, getWindSpeed, getDistance, getPressure]);
 
 	const displayData = useMemo(() => {
 		return timeRange === "24h" ? chartData.slice(0, 8) : chartData;
@@ -196,16 +176,20 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 		return displayData.filter((_, i) => i % 8 === 0).map((d) => d.fullTime);
 	}, [displayData, timeRange]);
 
+	const fullTimeToLabelMap = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const pt of displayData) {
+			map.set(pt.fullTime, timeRange === "24h" ? pt.time : pt.shortDate);
+		}
+		return map;
+	}, [displayData, timeRange]);
+
 	const formatXTick = useCallback(
-		(fullTime: string) => {
-			const point = displayData.find((d) => d.fullTime === fullTime);
-			if (!point) return fullTime;
-			return timeRange === "24h" ? point.time : point.shortDate;
-		},
-		[displayData, timeRange]
+		(fullTime: string) => fullTimeToLabelMap.get(fullTime) || fullTime,
+		[fullTimeToLabelMap]
 	);
 
-	const tabConfigs: { id: TabId; label: string; unitLabel: string; dataKey: keyof ChartDataPoint; formatter: (v: number) => string; }[] = [
+	const tabConfigs: ActiveTabConfig[] = useMemo(() => [
 		{ id: "temperature", label: "Temperature", unitLabel: `°${tempUnit}`, dataKey: "temp", formatter: (val) => `${val}°` },
 		{ id: "wind", label: "Wind", unitLabel: windSpeedUnit, dataKey: "wind_speed", formatter: (val) => `${val} ${windSpeedUnit}` },
 		{ id: "humidity", label: "Humidity", unitLabel: "%", dataKey: "humidity", formatter: (val) => `${val}%` },
@@ -213,7 +197,7 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 		{ id: "clouds", label: "Clouds", unitLabel: "%", dataKey: "clouds", formatter: (val) => `${val}%` },
 		{ id: "visibility", label: "Visibility", unitLabel: distanceUnit, dataKey: "visibility", formatter: (val) => `${val} ${distanceUnit}` },
 		{ id: "wet_bulb", label: "Heat Index", unitLabel: `°${tempUnit}`, dataKey: "wet_bulb", formatter: (val) => `${val}°` },
-	];
+	], [tempUnit, windSpeedUnit, pressureUnit, distanceUnit]);
 
 	const activeConfig = tabConfigs.find((c) => c.id === activeTab) || tabConfigs[0];
 
@@ -244,7 +228,7 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 	};
 
 	return (
-		<Card className="w-full flex-1 min-w-0 border-border bg-card rounded-lg">
+		<Card className="w-full flex-1 min-w-0 border-border bg-card rounded-lg content-visibility-auto">
 			<CardHeader className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 				<div className="space-y-0.5">
 					<CardTitle className="text-base font-semibold tracking-tight text-foreground flex items-center gap-2">
@@ -344,70 +328,20 @@ export function HourlyTemperature({ data }: HourlyTemperatureProps) {
 								</button>
 							</div>
 						</div>
-						<div className="h-44 w-full">
-							<ResponsiveContainer width="100%" height="100%">
-								<AreaChart data={displayData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-									<defs>
-										<linearGradient id="monochromeGradient" x1="0" y1="0" x2="0" y2="1">
-											<stop offset="5%" stopColor="var(--foreground)" stopOpacity={0.20} />
-											<stop offset="95%" stopColor="var(--foreground)" stopOpacity={0.0} />
-										</linearGradient>
-									</defs>
-									<CartesianGrid strokeDasharray="2 2" stroke="var(--border)" vertical={false} />
-									<XAxis
-										dataKey="fullTime"
-										ticks={xTicks}
-										tickFormatter={formatXTick}
-										stroke="var(--muted-foreground)"
-										fontSize={10}
-										tickLine={false}
-										axisLine={{ stroke: "var(--border)" }}
-									/>
-									<YAxis
-										stroke="var(--muted-foreground)"
-										fontSize={10}
-										tickLine={false}
-										axisLine={false}
-										domain={["auto", "auto"]}
-									/>
-									<Tooltip
-										content={({ active, payload }) => {
-											if (active && payload && payload.length) {
-												const pt = payload[0].payload as ChartDataPoint;
-												return (
-													<div className="border border-border bg-card p-2.5 rounded-md font-mono text-xs space-y-1">
-														<p className="font-medium text-foreground">{pt.fullTime}</p>
-														<p className="text-muted-foreground capitalize">{pt.description}</p>
-														<div className="pt-1 border-t border-border/60 flex items-center justify-between gap-4">
-															<span className="text-muted-foreground">{activeConfig.label}:</span>
-															<span className="text-foreground font-semibold">
-																{activeConfig.formatter(pt[activeConfig.dataKey] as number)}
-															</span>
-														</div>
-														{pt.pop > 0 && (
-															<div className="flex items-center justify-between gap-4 text-[10px]">
-																<span className="text-muted-foreground">Precipitation:</span>
-																<span className="text-foreground font-medium">{pt.pop}%</span>
-															</div>
-														)}
-													</div>
-												);
-											}
-											return null;
-										}}
-									/>
-									<Area
-										type="monotone"
-										dataKey={activeConfig.dataKey}
-										stroke="var(--foreground)"
-										strokeWidth={1.5}
-										fill="url(#monochromeGradient)"
-										dot={false}
-										activeDot={{ r: 4, stroke: "var(--background)", strokeWidth: 2, fill: "var(--foreground)" }}
-									/>
-								</AreaChart>
-							</ResponsiveContainer>
-						</div>
+						<Suspense
+							fallback={
+								<div className="h-44 w-full flex items-center justify-center font-mono text-xs text-muted-foreground">
+									Loading chart telemetry...
+								</div>
+							}
+						>
+							<HourlyTemperatureChart
+								displayData={displayData}
+								activeConfig={activeConfig}
+								xTicks={xTicks}
+								formatXTick={formatXTick}
+							/>
+						</Suspense>
 					</div>
 				)}
 
