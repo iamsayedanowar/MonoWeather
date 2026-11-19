@@ -38,8 +38,8 @@ export function WeatherMap({ lat, lon, city }: WeatherMapProps) {
 						<MarkerContent>
 							<div className="relative flex size-4 items-center justify-center">
 								<span className="absolute inline-flex size-full animate-ping rounded-full bg-foreground/75" />
-								<div className="relative size-4 rounded-full border-2 border-background bg-foreground shadow-sm flex items-center justify-center">
-									<div className="size-1.5 rounded-full bg-background" />
+								<div className="relative size-4 rounded-full border-2 border-white bg-blue-500 shadow-sm flex items-center justify-center">
+									{/* <div className="size-1.5 rounded-full bg-background" /> */}
 								</div>
 							</div>
 						</MarkerContent>
